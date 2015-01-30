@@ -1,0 +1,3 @@
+- More options to return custom warnings
+- Reduce complexity of `validate` function 
+- Support all features from `joi`

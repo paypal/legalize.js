@@ -1,0 +1,27 @@
+{
+  "name": "legalize",
+  "main": "legalize.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/paypal/legalize.js",
+  "authors": [
+    "Julian Fleischer <julfleischer@paypal.com>"
+  ],
+  "description": "A javascript object validation library.",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "validation"
+  ],
+  "license": "Apache 2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/components",
+    "test",
+    "tests"
+  ]
+}
