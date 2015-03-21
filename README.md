@@ -1,6 +1,6 @@
 # Legalize.js
 
-[![Build Status](https://travis-ci.org/paypal/legalize.js.svg)](https://travis-ci.org/paypal/legalize.js)
+[![Build Status](https://travis-ci.org/paypal/legalize.js.svg?branch=master)](https://travis-ci.org/paypal/legalize.js)
 
 Legalize.js is a library that performs validation of domain objects.
 It does **not** perform validation of web forms. It is optimized for the
