@@ -61,7 +61,7 @@ module.exports = function (grunt) {
                     ]
                 },
                 options: {
-                    compress: { drop_console: true },
+                    compress: { warnings: false },
                     report: "gzip",
                     preserveComments: "some",
                     banner: minifiedBanner,
