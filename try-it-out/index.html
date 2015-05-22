@@ -16,7 +16,7 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container try-it-out">
 
 <div class="header clearfix">
 <nav>
@@ -29,17 +29,87 @@
 <h3 class="text-muted">Legalize.js</h3>
 </div>
 
-<!--
+
 <div class="row content">
-<div class="col-lg-6">
-  <h4>Subheading</h4>
-  <p>
-    Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.
-  </p>
+<div class="col-lg-12">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+          Throw some objects at it
+      </h4>
+    </div>
+    <div class="panel-body">
+        <textarea class="form-control" rows="13" id="legalize-it-schema">{
+    firstName:
+        Legalize.string().minLength(1).maxLength(30).required(),
+    lastName:
+        Legalize.string().minLength(1).maxLength(30).required(),
+    age:
+        Legalize.number().integer().min(18),
+    sex:
+        Legalize.string().sanitizeBefore(function (value) {
+                value.toLowerCase();
+        }).valid("male", "female").optional(),
+}
+</textarea>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="row content">
+<div class="col-lg-12">
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+          Throw some objects at it
+      </h4>
+    </div>
+    <div class="panel-body">
+      <textarea class="form-control" rows="13" id="legalize-it-object">{
+    firstName: "Alexander",
+    lastName: "Carnicero",
+    age: 27
+}
+</textarea>
+    </div>
+  </div>
 
 </div>
 </div>
--->
+
+<div class="row content">
+<div class="col-lg-12">
+  <p>
+    <a class="col-lg-12 btn btn-success" id="legalize-it-button">
+      Legalize it 
+    </a>
+  </p>
+</div>
+</div>
+
+<div class="row content">
+<div class="col-lg-12">
+
+  <div class="panel panel-default" id="legalize-it-result-panel">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+          Result
+      </h4>
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+        <textarea class="form-control" rows="20" id="legalize-it-result">
+        </textarea>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+</div>
 
 <footer class="footer">
   <p>&copy; PayPal 2015</p>
@@ -49,9 +119,70 @@
 
 <a href="https://github.com/paypal/legalize.js"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/8b6b8ccc6da3aa5722903da7b58eb5ab1081adee/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_orange_ff7600.png"></a>
 
+<script src="../dist/legalize.min.js">
+</script>
+<script src="jslint.js">
+</script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js">
 </script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js">
+</script>
+
+<script>
+$(function () {
+  
+    var $schema = $("#legalize-it-schema");
+    var $object = $("#legalize-it-object");
+    var $result = $("#legalize-it-result");
+    var $resultPanel = $("#legalize-it-result-panel");
+    var $resultGroup = $resultPanel.find(".form-group");
+
+    $("#legalize-it-button").on("click", function () {
+        $resultPanel.removeClass("panel-info panel-success panel-warning panel-danger");
+        $resultGroup.removeClass("has-success has-warning has-error");
+
+        var schemaCode = $schema.val().trim();
+        var objCode = $object.val().trim();
+
+        try {
+            var schema = new Function("return " + schemaCode + ";");
+            var obj = new Function("return " + objCode + ";");
+
+            var result = Legalize.validate(obj(), schema());
+
+            if (result.error) {
+                $resultPanel.addClass("panel-danger");
+                $resultGroup.addClass("has-error");
+            } else if (result.warnings) {
+                $resultPanel.addClass("panel-warning");
+                $resultGroup.addClass("has-warning");
+            } else {
+                $resultPanel.addClass("panel-success");
+                $resultGroup.addClass("has-success");
+            }
+
+            $result.val(JSON.stringify(result, null, 2));
+        } catch (error) {
+            $resultPanel.addClass("panel-info");
+
+            var error = error.toString();
+            var warnings;
+
+            error += "\n\nJSLint warnings for Schema:\n";
+
+            warnings = jslint("var x = " + schemaCode + ";").warnings;
+            error += JSON.stringify(warnings, null, 2);
+
+            error += "\n\nJSLint warnings for Object:\n";
+
+            warnings = jslint("var x = " + objCode + ";").warnings;
+            error += JSON.stringify(warnings, null, 2);
+
+            $result.val(error);
+        }
+    });
+
+});
 </script>
 
 </body>
