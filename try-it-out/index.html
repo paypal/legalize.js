@@ -35,7 +35,7 @@
   <div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title">
-          Throw some objects at it
+        Define your schema
       </h4>
     </div>
     <div class="panel-body">
@@ -63,7 +63,7 @@
   <div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title">
-          Throw some objects at it
+        Throw some objects at it
       </h4>
     </div>
     <div class="panel-body">
@@ -80,13 +80,59 @@
 </div>
 
 <div class="row content">
-<div class="col-lg-12">
+<div class="col-lg-6">
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        Choose your weapons
+      </h4>
+    </div>
+    <div class="panel-body">
+
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" value="" checked id="option-strict">
+          strict
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" value="" checked id="option-warnOnInvalidOptionals">
+          warnOnInvalidOptionals
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" value="" id="option-allowUnknown">
+          allowUnknown
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" value="" checked id="option-stripUnknown">
+          stripUnknown
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" value="" checked id="option-warnUnknown">
+          warnUnknown
+        </label>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+<div class="col-lg-6">
   <p>
-    <a class="col-lg-12 btn btn-success" id="legalize-it-button">
+    <a class="col-lg-6 btn btn-lg btn-block btn-success" id="legalize-it-button">
       Legalize it 
     </a>
   </p>
 </div>
+
 </div>
 
 <div class="row content">
@@ -149,7 +195,16 @@ $(function () {
             var obj = new Function("return " + objCode + ";");
 
             var result = Legalize.validate(obj(), schema(), {
-                warnOnInvalidOptionals: false    
+                strict:
+                    $("#option-strict").is(":checked"),
+                warnOnInvalidOptionals:
+                    $("#option-warnOnInvalidOptionals").is(":checked"),
+                allowUnknown:
+                    $("#option-allowUnknown").is(":checked"),
+                stripUnknown:
+                    $("option-stripUnknown").is(":checked"),
+                warnUnknown:
+                    $("option-warnUnknown").is(":checked")
             });
 
             if (result.error) {
@@ -163,7 +218,12 @@ $(function () {
                 $resultGroup.addClass("has-success");
             }
 
-            $result.val(JSON.stringify(result, null, 2));
+            var stringifiedResult = JSON.stringify(result, null, 2);
+
+            $result.val(stringifiedResult);
+
+            $result.attr('rows', stringifiedResult.split("\n").length + 1);
+
         } catch (error) {
             $resultPanel.addClass("panel-info");
 
@@ -181,6 +241,8 @@ $(function () {
             error += JSON.stringify(warnings, null, 2);
 
             $result.val(error);
+
+            $result.attr('rows', error.split("\n").length + 1);
         }
     });
 
