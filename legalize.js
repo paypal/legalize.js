@@ -549,8 +549,8 @@
                 options = validationResult.value;
             }
         
-            // compile the schema - compile will check, whether schema is already
-            // compiled.
+            // compile the schema - compile will check whether schema is
+            // already compiled.
             schema = compile(schema);
         
             // warnings array will be populated

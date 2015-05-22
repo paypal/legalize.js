@@ -26,7 +26,7 @@ var expect = require("chai").expect;
 
 var L = require("../src/legalize-node.js");
 
-describe("error reporting", function () {
+describe("custom error reporting", function () {
 
     it("does propagate a custom warning from check() functions", function () {
 
