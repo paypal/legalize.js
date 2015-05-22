@@ -20,12 +20,19 @@
 (function (factory) {
     "use strict";
 
-    if (typeof define === 'function' && define.amd) {
-        define('Legalize', factory);
+    var legalize = factory();
+
+    // set globally for use with plain javascript
+    if (typeof window !== "undefined") {
+        window.Legalize = legalize;
     } else {
-        window.Legalize = factory();
+        this.Legalize = legalize;
     }
 
+    // define module for use with requireJs
+    if (typeof define === "function" && define.amd) {
+        define("Legalize", [], legalize);
+    }
 }(function (undefined) {
     "use strict";
 
@@ -39,9 +46,9 @@
             return Object.prototype.toString.call(arg) === '[object Array]';
         };
     }
-    
+
     var ES5Object = {
-        
+
         freeze: isFunc(Object.freeze) ? Object.freeze : function (x) {
             // Object.freeze is used to freeze the publicly exposed API.
             // This will work on all modern browsers, so "attacking"
@@ -51,25 +58,25 @@
             return x;
         },
 
-        keys: isFunc(Object.keys) ? Object.keys : (function() {
+        keys: isFunc(Object.keys) ? Object.keys : (function () {
             // Object.keys() is not available in some legacy browsers.
             // This shim is taken (and slightly modified to make jshint happy) from
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
 
             var hasOwnProperty = Object.prototype.hasOwnProperty;
-            var hasDontEnumBug = !({ toString: null }).propertyIsEnumerable('toString');
+            var hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString');
             var dontEnums = [
-                  'toString',
-                  'toLocaleString',
-                  'valueOf',
-                  'hasOwnProperty',
-                  'isPrototypeOf',
-                  'propertyIsEnumerable',
-                  'constructor'
-                ];
+                'toString',
+                'toLocaleString',
+                'valueOf',
+                'hasOwnProperty',
+                'isPrototypeOf',
+                'propertyIsEnumerable',
+                'constructor'
+            ];
             var dontEnumsLength = dontEnums.length;
 
-            return function(obj) {
+            return function (obj) {
                 var result = [], prop, i;
 
                 for (prop in obj) {
@@ -100,13 +107,15 @@
         }
     };
 
-    return (function (Object) {
+    var Legalize = (function (Object) {
+
         // the `Object` argument overloads the actual `Object` in legacy
         // browser engines. legalize uses exactly the functions defined
         // above. Node will not care as this file is only wrapped around
         // the library for the browser.
 
         /* jshint unused: false */
+        var _Legalize = window.Legalize;
 
         /*───────────────────────────────────────────────────────────────────────────*\
          │  Copyright (C) 2014 eBay Software Foundation                               │
@@ -140,6 +149,12 @@
                 return 'null';
             }
             return typeof value;
+        }
+        function noConflict() {
+            if (window.Legalize === Legalize) {
+                window.Legalize = _Legalize;
+            }
+            return Legalize;
         }
         function cast(value, type) {
             if (typeOf(value) === type) {
@@ -462,7 +477,7 @@
         
             uppercase: makeCheck(function (actual) {
                 actual = String(actual);
-                return actual.toUpperCase() === actual;        
+                return actual.toUpperCase() === actual;
             }),
         
             alphanum: makeMatchCheck(/^[0-9a-zA-Z]*$/),
@@ -506,7 +521,7 @@
         var object = makeSchemaBuilder({
             type: 'object'
         }, withLengthChecks({
-            
+        
             keys: makeProperty("keys"),
         
             type: makeCheck(is),
@@ -536,7 +551,7 @@
             if (isEmpty(options)) {
                 options = defaultOptions;
             }
-            
+        
             // if the given options are not empty, validate 'em
             // the check is necessary as we would be calling ourselves
             // endlessley while validating the options in a neverending
@@ -557,11 +572,11 @@
             var warnings = [];
         
             // A helper that is recursively applied along the object.
-            // 
+            //
             // Returns the validated value (or the default, if there is one,
             // in case the validation failed).
             function _validate(value, schema, path) {
-                
+        
                 // calculate the type of the value - see `typeOf`.
                 var actualType = typeOf(value);
         
@@ -591,7 +606,7 @@
                     warnings.push(isObject(warning) ? warning :
                             makeInfoMessageObject(warning, expected, actual));
                 }
-                
+        
                 // creates an errorneous return value
                 function makeError(validValue, error, expected, actual) {
                     var info = makeInfoMessageObject(error, expected, actual);
@@ -632,7 +647,7 @@
         
                 // Known at this point:
                 // - `value` is not undefined
-                
+        
                 // if FORBIDDEN we're facing a situation here:
                 if (presence === FORBIDDEN) {
                     return makeError(undefined, 'forbidden_encountered');
@@ -714,7 +729,7 @@
                 // - `value` is not in the set of `allowed` values
                 // - `value` is not in the set of `valid` values
                 // - `value` is not in the set of `invalid` values
-                
+        
                 // iterate over all checks and check whether the value satisfies them or not
                 var checksFailed = [];
                 forEach(schema.checks, function (check) {
@@ -743,7 +758,7 @@
         
                 // objects are special as they require to recursively descend into them
                 if (expectedType === 'object') {
-                    
+        
                     var validObject = {};
                     var objectErrors = [];
         
@@ -779,7 +794,7 @@
                             }
                         }
                     });
-                    
+        
                     if (!isEmpty(objectErrors)) {
                         return makeError(validObject, objectErrors);
                     }
@@ -790,7 +805,7 @@
         
                 // arrays are special just like objects - but different
                 else if (expectedType === 'array') {
-                    
+        
                     var validArray = [];
                     var arrayErrors = [];
                     var includes = schema.includes;
@@ -937,7 +952,8 @@
             compile: compile,
             validate: validate,
         
-            typeOf: typeOf
+            typeOf: typeOf,
+            noConflict: noConflict
         });
         
         optionSchema = compile({
@@ -967,9 +983,12 @@
         };
         
         
-        /* global publiclyExposedInterface */
 
+        /* global publiclyExposedInterface */
         return publiclyExposedInterface;
+
     }(ES5Object));
+
+    return Legalize;
 }));
 

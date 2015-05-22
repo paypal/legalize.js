@@ -33,7 +33,7 @@ module.exports = function (grunt) {
 
         jshint: {
             src: [
-                "src/**/*.js",
+                "src/**/*.js"
             ],
             gruntfile: [
                 "Gruntfile.js"
@@ -131,7 +131,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("lint",
         ["jshint"]);
-   
+
     grunt.registerTask("test",
         ["lint", "mochaTest:test"]);
 
