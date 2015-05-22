@@ -94,31 +94,40 @@
     <div class="panel-body">
 
       <div class="checkbox">
-        <label>
+        <label data-toggle="tooltip" data-placement="right" title="
+            If set to false, validate will first try to convert values to
+            the specified type. A warning will be issued instead. If set to
+            true, validate will reject values of the wrong types.">
           <input type="checkbox" value="" checked id="option-strict">
           strict
         </label>
       </div>
       <div class="checkbox">
-        <label>
+        <label data-toggle="tooltip" data-placement="right" title="
+            If a value failed to validate but is optional or has a default
+            value, this will issue a warning for the failed validation.">
           <input type="checkbox" value="" checked id="option-warnOnInvalidOptionals">
           warnOnInvalidOptionals
         </label>
       </div>
       <div class="checkbox">
-        <label>
+        <label data-toggle="tooltip" data-placement="right" title="
+            Whether to allow unknown keys in objects or not.">
           <input type="checkbox" value="" id="option-allowUnknown">
           allowUnknown
         </label>
       </div>
       <div class="checkbox">
-        <label>
+        <label data-toggle="tooltip" data-placement="right" title="
+            Whether unknown keys should be carried over or stripped.">
           <input type="checkbox" value="" checked id="option-stripUnknown">
           stripUnknown
         </label>
       </div>
       <div class="checkbox">
-        <label>
+        <label data-toggle="tooltip" data-placement="right" title="
+            if allowUnknown is set - whether a warning should be issued or
+            not when an unknown key is encountered.">
           <input type="checkbox" value="" checked id="option-warnUnknown">
           warnUnknown
         </label>
@@ -185,6 +194,10 @@ $(function () {
     var $result = $("#legalize-it-result");
     var $resultPanel = $("#legalize-it-result-panel");
     var $resultGroup = $resultPanel.find(".form-group");
+
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
 
     $("#legalize-it-button").on("click", function () {
         $resultPanel.removeClass("panel-info panel-success panel-warning panel-danger");
