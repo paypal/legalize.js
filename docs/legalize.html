@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>legalize.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="legalize-browser.html">
+                legalize-browser.js
+              </a>
+            
+              
+              <a class="source" href="legalize-node.html">
+                legalize-node.js
+              </a>
+            
+              
+              <a class="source" href="legalize.html">
+                legalize.js
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>legalize.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/*───────────────────────────────────────────────────────────────────────────*\
+ │  Copyright (C) 2014 eBay Software Foundation                               │
+ │                                                                            │
+ │  Licensed under the Apache License, Version 2.0 (the "License");           │
+ │  you may not use this file except in compliance with the License.          │
+ │  You may obtain a copy of the License at                                   │
+ │                                                                            │
+ │    http://www.apache.org/licenses/LICENSE-2.0                              │
+ │                                                                            │
+ │  Unless required by applicable law or agreed to in writing, software       │
+ │  distributed under the License is distributed on an "AS IS" BASIS,         │
+ │  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  │
+ │  See the License for the specific language governing permissions and       │
+ │  limitations under the License.                                            │
+ \*───────────────────────────────────────────────────────────────────────────*/</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>@exclude</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-pi">"use strict"</span>;
+
+<span class="hljs-comment">/* global window */</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>@endexclude</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-keyword">var</span> publiclyExposedInterface = {};
+
+<span class="hljs-keyword">var</span> REQUIRED = <span class="hljs-string">"required"</span>;
+<span class="hljs-keyword">var</span> OPTIONAL = <span class="hljs-string">"optional"</span>;
+<span class="hljs-keyword">var</span> FORBIDDEN = <span class="hljs-string">"forbidden"</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">not</span>(<span class="hljs-params">f</span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">v</span>) </span>{ <span class="hljs-keyword">return</span> !f(v); }; }
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">typeOf</span>(<span class="hljs-params">value</span>) </span>{
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(value)) {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">'array'</span>;
+    }
+    <span class="hljs-keyword">if</span> (value === <span class="hljs-literal">null</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">'null'</span>;
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">typeof</span> value;
+}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cast</span>(<span class="hljs-params">value, type</span>) </span>{
+    <span class="hljs-keyword">if</span> (typeOf(value) === type) {
+        <span class="hljs-keyword">return</span> value;
+    }
+    <span class="hljs-keyword">switch</span> (type) {
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'string'</span>:  <span class="hljs-keyword">return</span> <span class="hljs-built_in">String</span>(value);
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'number'</span>:  <span class="hljs-keyword">return</span> <span class="hljs-built_in">Number</span>(value);
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'boolean'</span>:
+            <span class="hljs-keyword">if</span> (value === <span class="hljs-string">"true"</span>)    { <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;  }
+            <span class="hljs-keyword">if</span> (value === <span class="hljs-string">"false"</span>)   { <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>; }
+            <span class="hljs-keyword">return</span> <span class="hljs-built_in">Boolean</span>(<span class="hljs-built_in">Number</span>(value));
+        <span class="hljs-keyword">default</span>:        <span class="hljs-keyword">return</span> <span class="hljs-literal">undefined</span>;
+    }
+}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isFunction</span>(<span class="hljs-params">value</span>)  </span>{ <span class="hljs-keyword">return</span> typeOf(value) === <span class="hljs-string">'function'</span>; }
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isObject</span>(<span class="hljs-params">value</span>)    </span>{ <span class="hljs-keyword">return</span> typeOf(value) === <span class="hljs-string">'object'</span>; }
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isNumber</span>(<span class="hljs-params">value</span>)    </span>{ <span class="hljs-keyword">return</span> typeOf(value) === <span class="hljs-string">'number'</span>; }
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isString</span>(<span class="hljs-params">value</span>)    </span>{ <span class="hljs-keyword">return</span> typeOf(value) === <span class="hljs-string">'string'</span>; }
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isArray</span>(<span class="hljs-params">value</span>)     </span>{ <span class="hljs-keyword">return</span> typeOf(value) === <span class="hljs-string">'array'</span>; }
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isUndefined</span>(<span class="hljs-params">value</span>) </span>{ <span class="hljs-keyword">return</span> value === <span class="hljs-literal">null</span> || value === <span class="hljs-literal">undefined</span>; }
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isNumeric</span>(<span class="hljs-params">value</span>)   </span>{
+    <span class="hljs-keyword">var</span> number = <span class="hljs-built_in">Number</span>(value);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>typeof number === “number”, but <code>number</code> can be <code>NaN</code> (if value was not
+numeric) NaN has a special property: It is the only thing which is not
+equal to itself. So checking for whether <code>number</code> is not NaN will reveal
+whether <code>value</code> was numeric or not.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> number === number;
+}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isInteger</span>(<span class="hljs-params">value</span>)   </span>{ <span class="hljs-keyword">return</span> <span class="hljs-built_in">parseInt</span>(value) === <span class="hljs-built_in">Number</span>(value); }
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getLength</span>(<span class="hljs-params">thing</span>) </span>{
+    <span class="hljs-keyword">if</span> (isArray(thing) || isString(thing)) { <span class="hljs-keyword">return</span> thing.length; }
+    <span class="hljs-keyword">if</span> (isObject(thing))                   { <span class="hljs-keyword">return</span> <span class="hljs-built_in">Object</span>.keys(thing).length; }
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">undefined</span>;
+}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isEmpty</span>(<span class="hljs-params">value</span>)     </span>{ <span class="hljs-keyword">return</span> isUndefined(value) || getLength(value) === <span class="hljs-number">0</span>; }
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">is</span>(<span class="hljs-params">value, type</span>)    </span>{ <span class="hljs-keyword">return</span> value <span class="hljs-keyword">instanceof</span> type; }
+
+<span class="hljs-keyword">var</span> isDefined = not(isUndefined);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p><code>applyEach</code> takes an array or an object <code>thing</code> and a function <code>func</code>.
+<code>func</code> is applied on every element in <code>thing</code> with its result
+replacing the original element.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">applyEach</span>(<span class="hljs-params">thing, func</span>) </span>{
+    <span class="hljs-keyword">var</span> i;
+    <span class="hljs-keyword">if</span> (isArray(thing)) {
+        <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; thing.length; i += <span class="hljs-number">1</span>) {
+            thing[i] = func(thing[i], i);
+        }
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">var</span> keys = <span class="hljs-built_in">Object</span>.keys(thing);
+        <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; keys.length; i += <span class="hljs-number">1</span>) {
+            <span class="hljs-keyword">var</span> key = keys[i];
+            thing[key] = func(thing[key], key);
+        }
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p><code>forEach</code> takes an array or an object <code>thing</code> and a function <code>func</code>.
+<code>func</code> is applied on every element in <code>thing</code>.
+<code>forEach</code> will leave the original <code>thing</code> unchanged. It is expressed
+in terms of <code>applyEach</code> by having the functions passed to <code>applyEach</code>
+returning the original value, not the result of applying <code>func</code> to
+the elements.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">forEach</span>(<span class="hljs-params">thing, func</span>) </span>{
+    applyEach(thing, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value, key</span>) </span>{
+        func(value, key);
+        <span class="hljs-keyword">return</span> value;
+    });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">merge</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">var</span> obj = {};
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-built_in">arguments</span>.length; i += <span class="hljs-number">1</span>) {
+        <span class="hljs-keyword">var</span> obj2 = <span class="hljs-built_in">arguments</span>[i];
+        forEach(obj2, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value, key</span>) </span>{
+            <span class="hljs-keyword">if</span> (isArray(obj[key])) {
+                <span class="hljs-keyword">var</span> add = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">e</span>) </span>{ obj[key].push(e); };
+                <span class="hljs-keyword">if</span> (isArray(value)) {
+                    value.forEach(add);
+                } <span class="hljs-keyword">else</span> {
+                    add(value);
+                }
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (isObject(obj[key]) &amp;&amp; isObject(value)) {
+                obj[key] = merge(obj[key], value);
+            } <span class="hljs-keyword">else</span> {
+                obj[key] = value;
+            }
+        });
+    }
+    <span class="hljs-keyword">return</span> obj;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">copy</span>(<span class="hljs-params">obj, obj2</span>) </span>{
+    <span class="hljs-keyword">if</span> (isObject(obj2)) {
+        forEach(obj2, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value, key</span>) </span>{
+            obj[key] = obj2[key];
+        });
+    }
+    <span class="hljs-keyword">return</span> obj;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">equals</span>(<span class="hljs-params">left, right</span>) </span>{
+    <span class="hljs-keyword">if</span> (!isArray(left) &amp;&amp; !isObject(left)) {
+        <span class="hljs-keyword">return</span> left === right || (left !== left &amp;&amp; right !== right);
+    }
+    <span class="hljs-keyword">if</span> (getLength(left) !== getLength(right)) {
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    }
+    <span class="hljs-keyword">var</span> allKeys = merge({ x: <span class="hljs-built_in">Object</span>.keys(left) }, { x: <span class="hljs-built_in">Object</span>.keys(right) }).x;
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; allKeys.length; i += <span class="hljs-number">1</span>) {
+        <span class="hljs-keyword">var</span> key = allKeys[i];
+        <span class="hljs-keyword">if</span> (!equals(left[key], right[key])) {
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        }
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>compile() will transform a schemaBuilder (marked with _isSchemaBuilder)
+into a schema (marked with _isSchema).</p>
+<p>Additionally it supports certain shorthands:</p>
+<ul>
+<li>A RegExp -&gt; string().match(thatRegex)</li>
+<li>An Array -&gt; alternatives(…)</li>
+<li>An Object -&gt; object().keys(…)</li>
+</ul>
+<p>All other kinds of values are just compiled using any().valid().</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">compile</span>(<span class="hljs-params">schema</span>) </span>{
+    <span class="hljs-keyword">if</span> (schema._isSchema) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>already a compiled schema, nothing to be done here.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> schema;
+    }
+    <span class="hljs-keyword">if</span> (schema._isSchemaBuilder &amp;&amp; isFunction(schema.compile)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>it is a schema builder and it can be compiled, so do it</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> schema.compile();
+    }
+    <span class="hljs-keyword">if</span> (is(schema, <span class="hljs-built_in">RegExp</span>)) {
+        <span class="hljs-keyword">return</span> publiclyExposedInterface.string().match(schema).compile();
+    }
+    <span class="hljs-keyword">if</span> (isArray(schema)) {
+        <span class="hljs-keyword">var</span> alternatives = publiclyExposedInterface.alternatives;
+        <span class="hljs-keyword">return</span> alternatives.apply(publiclyExposedInterface, schema).compile();
+    }
+    <span class="hljs-keyword">if</span> (isObject(schema)) {
+        <span class="hljs-keyword">return</span> publiclyExposedInterface.object().keys(schema).compile();
+    }
+    <span class="hljs-keyword">return</span> publiclyExposedInterface.any().valid(schema).compile();
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeSchemaBuilder</span>(<span class="hljs-params">arg, validators</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">var</span> expected = <span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>);
+        <span class="hljs-keyword">var</span> obj = <span class="hljs-built_in">Object</span>.create(<span class="hljs-keyword">this</span>);
+        <span class="hljs-keyword">var</span> parent = <span class="hljs-keyword">this</span>;
+        copy(obj, validators);
+        obj.compile = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">isNotTopLevel</span>) </span>{
+            <span class="hljs-keyword">var</span> schema = merge(parent.compile(<span class="hljs-literal">true</span>), isFunction(arg) ? arg(expected) : arg);
+            <span class="hljs-keyword">if</span> (!isNotTopLevel) {
+                <span class="hljs-keyword">var</span> doCompile = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">schema</span>) </span>{
+                    <span class="hljs-keyword">return</span> compile(schema);
+                };
+                applyEach(schema.includes, doCompile);
+                applyEach(schema.excludes, doCompile);
+                applyEach(schema.keys, doCompile);
+                applyEach(schema.alternatives, doCompile);
+            }
+            schema._isSchema = <span class="hljs-literal">true</span>;
+            <span class="hljs-keyword">return</span> schema;
+        };
+        <span class="hljs-keyword">return</span> obj;
+    };
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeProperty</span>(<span class="hljs-params">property</span>) </span>{
+    <span class="hljs-keyword">return</span> makeSchemaBuilder(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">expected</span>) </span>{
+        <span class="hljs-keyword">var</span> obj = {};
+        obj[property] = expected[<span class="hljs-number">0</span>];
+        <span class="hljs-keyword">return</span> obj;
+    });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeArrayProperty</span>(<span class="hljs-params">property</span>) </span>{
+    <span class="hljs-keyword">return</span> makeSchemaBuilder(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">expected</span>) </span>{
+        <span class="hljs-keyword">var</span> obj = {};
+        obj[property] = expected;
+        <span class="hljs-keyword">return</span> obj;
+    });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeCheck</span>(<span class="hljs-params">predicate</span>) </span>{
+    <span class="hljs-keyword">return</span> makeSchemaBuilder(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">expected</span>) </span>{
+        <span class="hljs-keyword">return</span> {
+            checks: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual</span>) </span>{
+                <span class="hljs-keyword">return</span> predicate(actual, expected[<span class="hljs-number">0</span>]);
+            }
+        };
+    });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeMatchCheck</span>(<span class="hljs-params">pattern</span>) </span>{
+    <span class="hljs-keyword">return</span> makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual</span>) </span>{
+        <span class="hljs-keyword">return</span> pattern.test(actual);
+    });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">bind</span>(<span class="hljs-params">thisArg, func</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>this is actually a very simple shim, so bind also works
+in legacy browsers.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">var</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>);
+        <span class="hljs-keyword">return</span> func.apply(thisArg, args);
+    };
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">withLengthChecks</span>(<span class="hljs-params">validators</span>) </span>{
+    <span class="hljs-keyword">return</span> merge(validators, {
+        minLength: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual, expected</span>) </span>{
+            <span class="hljs-keyword">return</span> getLength(actual) &gt;= expected;
+        }),
+
+        maxLength: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual, expected</span>) </span>{
+            <span class="hljs-keyword">return</span> getLength(actual) &lt;= expected;
+        }),
+
+        length: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual, expected</span>) </span>{
+            <span class="hljs-keyword">return</span> getLength(actual) === expected;
+        })
+    });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">rootSchema</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> {
+        allowed: [],
+        valid: [],
+        invalid: [],
+        checks: [],
+        checksAfter: [],
+        alias: {},
+        keys: {},
+        includes: [],
+        excludes: [],
+        alternatives: [],
+        sanitizeBefore: [],
+        sanitize: [],
+        pattern: <span class="hljs-literal">null</span>,
+        _isSchema: <span class="hljs-literal">true</span>
+    };
+}
+
+<span class="hljs-keyword">var</span> rootSchemaBuilder = {
+    _isSchemaBuilder: <span class="hljs-literal">true</span>,
+    compile: rootSchema,
+
+    notEmpty: makeCheck(not(isEmpty)),
+
+    allow:    makeArrayProperty(<span class="hljs-string">'allowed'</span>),
+    valid:    makeArrayProperty(<span class="hljs-string">'valid'</span>),
+    invalid:  makeArrayProperty(<span class="hljs-string">'invalid'</span>),
+    alias:    makeProperty(<span class="hljs-string">'alias'</span>),
+    check:    makeArrayProperty(<span class="hljs-string">'checksAfter'</span>),
+    satisfy:  makeArrayProperty(<span class="hljs-string">'checks'</span>),
+    sanitize: makeArrayProperty(<span class="hljs-string">'sanitize'</span>),
+    sanitizeBefore: makeArrayProperty(<span class="hljs-string">'sanitizeBefore'</span>),
+
+    required:  makeSchemaBuilder({ presence: REQUIRED }),
+    optional:  makeSchemaBuilder({ presence: OPTIONAL }),
+    forbidden: makeSchemaBuilder({ presence: FORBIDDEN }),
+
+    <span class="hljs-keyword">default</span>: makeProperty(<span class="hljs-string">'defaultValue'</span>)
+};
+
+<span class="hljs-keyword">var</span> any  = makeSchemaBuilder({});
+
+<span class="hljs-keyword">var</span> bool = makeSchemaBuilder({
+    type: <span class="hljs-string">'boolean'</span>
+});
+
+<span class="hljs-keyword">var</span> func = makeSchemaBuilder({
+    type: <span class="hljs-string">'function'</span>
+});
+
+<span class="hljs-keyword">var</span> number = makeSchemaBuilder({
+    type: <span class="hljs-string">'number'</span>
+}, {
+    min: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual, expected</span>) </span>{
+        <span class="hljs-keyword">return</span> actual &gt;= expected;
+    }),
+
+    max: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual, expected</span>) </span>{
+        <span class="hljs-keyword">return</span> actual &lt;= expected;
+    }),
+
+    greater: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual, expected</span>) </span>{
+        <span class="hljs-keyword">return</span> actual &gt; expected;
+    }),
+
+    lesser: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual, expected</span>) </span>{
+        <span class="hljs-keyword">return</span> actual &lt; expected;
+    }),
+
+    integer: makeCheck(isInteger)
+
+});
+
+<span class="hljs-keyword">var</span> string = makeSchemaBuilder({
+    type: <span class="hljs-string">'string'</span>
+}, withLengthChecks({
+
+    match: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual, expected</span>) </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">RegExp</span>(expected).test(actual);
+    }),
+
+    insensitive: makeSchemaBuilder({ insensitive: <span class="hljs-literal">true</span> }),
+
+    lowercase: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual</span>) </span>{
+        actual = <span class="hljs-built_in">String</span>(actual);
+        <span class="hljs-keyword">return</span> actual.toLowerCase() === actual;
+    }),
+
+    uppercase: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual</span>) </span>{
+        actual = <span class="hljs-built_in">String</span>(actual);
+        <span class="hljs-keyword">return</span> actual.toUpperCase() === actual;        
+    }),
+
+    alphanum: makeMatchCheck(<span class="hljs-regexp">/^[0-9a-zA-Z]*$/</span>),
+
+    url: makeMatchCheck(
+        <span class="hljs-regexp">/^https?:\/\/(\w+:?\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&amp;%@!\-\/]))?$/</span>),
+
+    element: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual</span>) </span>{
+        <span class="hljs-keyword">return</span> !!<span class="hljs-built_in">window</span>.document.getElementById(actual);
+    }),
+
+    digits: makeCheck(<span class="hljs-regexp">/^[0-9]*$/</span>),
+
+    numeric: makeCheck(isNumeric)
+}));
+
+<span class="hljs-keyword">var</span> array = makeSchemaBuilder({
+    type: <span class="hljs-string">'array'</span>
+}, withLengthChecks({
+
+    unique: makeCheck(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">actual</span>) </span>{
+        <span class="hljs-keyword">var</span> hash = {};
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; actual.length; i += <span class="hljs-number">1</span>) {
+            <span class="hljs-keyword">var</span> value = actual[i];
+            <span class="hljs-keyword">if</span> (isNumber(value) || isString(value)) {
+                <span class="hljs-keyword">if</span> (hash[value]) {
+                    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+                }
+                hash[value] = <span class="hljs-literal">true</span>;
+            }
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+    }),
+
+    includes: makeArrayProperty(<span class="hljs-string">'includes'</span>),
+
+    excludes: makeArrayProperty(<span class="hljs-string">'excludes'</span>),
+
+}));
+
+<span class="hljs-keyword">var</span> object = makeSchemaBuilder({
+    type: <span class="hljs-string">'object'</span>
+}, withLengthChecks({
+    
+    keys: makeProperty(<span class="hljs-string">"keys"</span>),
+
+    type: makeCheck(is),
+
+    pattern: makeProperty(<span class="hljs-string">"pattern"</span>)
+
+}));
+
+<span class="hljs-keyword">var</span> alternatives = makeArrayProperty(<span class="hljs-string">'alternatives'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>need to be defined here, so jslint does not complain.
+these are assigned at the bottom since they use the
+publiclyExposedInterface, which is not assigned yet.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> optionSchema, defaultOptions;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">validate</span>(<span class="hljs-params">value, schema, options, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>prepare callback: it is either in the fourth or third argument
+or there exists none (in that case set <code>callback</code> to <code>null</code>).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    callback = isFunction(callback) ?
+        callback : (isFunction(options) ? options : <span class="hljs-literal">null</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>prepare options: either there is an object in the third argument - or not.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    options = isObject(options) ? options : {};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>if the given options are not empty, assume the defaults</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (isEmpty(options)) {
+        options = defaultOptions;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>if the given options are not empty, validate ‘em
+the check is necessary as we would be calling ourselves
+endlessley while validating the options in a neverending
+call to validate.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">var</span> validationResult = validate(options, optionSchema);
+        <span class="hljs-keyword">if</span> (validationResult.error) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(validationResult.error);
+        }
+        options = validationResult.value;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>compile the schema - compile will check whether schema is
+already compiled.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    schema = compile(schema);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>warnings array will be populated</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> warnings = [];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>A helper that is recursively applied along the object.</p>
+<p>Returns the validated value (or the default, if there is one,
+in case the validation failed).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_validate</span>(<span class="hljs-params">value, schema, path</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>calculate the type of the value - see <code>typeOf</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> actualType = typeOf(value);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>calculate the presence requirement.
+If the schema does not specify one, assume the default presence.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> presence = schema.presence || options.presence;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>the defaultValue - we will need this in a lot of places.
+defaultValue may actually be undefined.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> defaultValue = schema.defaultValue;
+
+        <span class="hljs-keyword">var</span> expectedType = schema.type;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>creates an object containing a bunch of information</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeInfoMessageObject</span>(<span class="hljs-params">type, expected, actual</span>) </span>{
+            <span class="hljs-keyword">return</span> {
+                type: type,
+                expected: expected,
+                actual: actual,
+                sourcePath: path,
+                sourceValue: value
+            };
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>issues a warning in the warnings-array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">issueWarning</span>(<span class="hljs-params">warning, expected, actual</span>) </span>{
+            warnings.push(isObject(warning) ? warning :
+                    makeInfoMessageObject(warning, expected, actual));
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>creates an errorneous return value</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeError</span>(<span class="hljs-params">validValue, error, expected, actual</span>) </span>{
+            <span class="hljs-keyword">var</span> info = makeInfoMessageObject(error, expected, actual);
+
+            <span class="hljs-keyword">if</span> (isDefined(defaultValue) &amp;&amp;
+                    presence === OPTIONAL &amp;&amp;
+                    options.warnOnInvalidOptionals) {
+                issueWarning(info);
+                <span class="hljs-keyword">return</span> makeValue(validValue);
+            }
+            <span class="hljs-keyword">return</span> {
+                error: info,
+                value: validValue
+            };
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>creates a simple, valid return value</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeValue</span>(<span class="hljs-params">validValue</span>) </span>{
+            <span class="hljs-keyword">return</span> { value: validValue };
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>loop variables. due to hoisting will end up here anyway.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>, j = <span class="hljs-number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>if the current value is actually nonexistent:</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (actualType === <span class="hljs-string">'undefined'</span>) {
+            <span class="hljs-keyword">if</span> (presence === OPTIONAL) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>it’s alright if presence is OPTIONAL
+just return the default (which may be undefined, which is alright)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="hljs-keyword">return</span> makeValue(defaultValue);
+            }
+            <span class="hljs-keyword">if</span> (presence === REQUIRED) {
+                <span class="hljs-keyword">return</span> makeError(<span class="hljs-literal">undefined</span>, <span class="hljs-string">'required_missing'</span>);
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>if FORBIDDEN -&gt; we’re fine, just return</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">return</span> makeValue();
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Known at this point:</p>
+<ul>
+<li><code>value</code> is not undefined</li>
+</ul>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>if FORBIDDEN we’re facing a situation here:</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (presence === FORBIDDEN) {
+            <span class="hljs-keyword">return</span> makeError(<span class="hljs-literal">undefined</span>, <span class="hljs-string">'forbidden_encountered'</span>);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>is it a union type?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> alternatives = schema.alternatives;
+        <span class="hljs-keyword">if</span> (!isEmpty(alternatives)) {
+            <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; alternatives.length; i += <span class="hljs-number">1</span>) {
+                <span class="hljs-keyword">var</span> alternative = alternatives[i];
+                <span class="hljs-keyword">var</span> result = _validate(value, alternative, path);
+                <span class="hljs-keyword">if</span> (!result.error) {
+                    <span class="hljs-keyword">return</span> result;
+                }
+            }
+            <span class="hljs-keyword">return</span> makeError(defaultValue, <span class="hljs-string">'no_alternative_matched'</span>);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>apply sanitizeBefore</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        forEach(schema.sanitizeBefore, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">sanitizer</span>) </span>{
+            value = sanitizer(value);
+        });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>Translate aliases before</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> alias = schema.alias;
+        <span class="hljs-keyword">if</span> (isDefined(alias[value])) {
+            value = alias[value];
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>At this point: alias() definitions have been applied.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>if the schema prescribes a type for the value
+and the actual type and the prescribed type do not match</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (isDefined(expectedType) &amp;&amp; actualType !== expectedType) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>when strict: mismatching types cause errors</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (options.strict) {
+                <span class="hljs-keyword">return</span> makeError(defaultValue, <span class="hljs-string">'mismatching_types'</span>,
+                                 expectedType, actualType);
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>if not strict (we returned already) issue a warning</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            issueWarning(<span class="hljs-string">'mismatching_types'</span>, expectedType, actualType);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>also cast the value to the respective type</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            value = cast(value, expectedType);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>Known at this point:</p>
+<ul>
+<li><code>value</code> is of type <code>expectedType</code> (or <code>any</code>)</li>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+        <span class="hljs-keyword">var</span> allowed = schema.allowed;
+        <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; allowed.length; i += <span class="hljs-number">1</span>) {
+            <span class="hljs-keyword">if</span> (equals(allowed[i], value)) {
+                <span class="hljs-keyword">return</span> makeValue(value);
+            }
+        }
+        <span class="hljs-keyword">var</span> invalid = schema.invalid;
+        <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; invalid.length; i += <span class="hljs-number">1</span>) {
+            <span class="hljs-keyword">if</span> (equals(invalid[i], value)) {
+                <span class="hljs-keyword">return</span> makeError(defaultValue, <span class="hljs-string">'invalid_value'</span>);
+            }
+        }
+        <span class="hljs-keyword">var</span> valid = schema.valid;
+        <span class="hljs-keyword">if</span> (!isEmpty(valid)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>the subtle difference between <code>allows</code> and <code>valid</code> is that
+if a value is not in the list of valid values, validation will
+fail. <code>allows</code> on the other hand will simply accepts values
+while still allowing other checks to accept the value.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; valid.length; i += <span class="hljs-number">1</span>) {
+                <span class="hljs-keyword">if</span> (equals(valid[i], value)) {
+                    <span class="hljs-keyword">return</span> makeValue(value);
+                }
+            }
+            <span class="hljs-keyword">return</span> makeError(defaultValue, <span class="hljs-string">'not_a_valid_value'</span>);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <p>Known at this point:</p>
+<ul>
+<li><code>value</code> is not in the set of <code>allowed</code> values</li>
+<li><code>value</code> is not in the set of <code>valid</code> values</li>
+<li><code>value</code> is not in the set of <code>invalid</code> values</li>
+</ul>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>iterate over all checks and check whether the value satisfies them or not</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> checksFailed = [];
+        forEach(schema.checks, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">check</span>) </span>{
+            <span class="hljs-keyword">var</span> checkResult;
+            <span class="hljs-keyword">try</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <p>invoking a user-defined function, therefore the try..catch</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                checkResult = check(value);
+            } <span class="hljs-keyword">catch</span> (err) {
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Error while executing user-defined function"</span>);
+                <span class="hljs-built_in">console</span>.log(err);
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+            }
+            <span class="hljs-keyword">if</span> (checkResult === <span class="hljs-literal">true</span>) {
+                <span class="hljs-keyword">return</span>;
+            }
+            <span class="hljs-keyword">if</span> (!isObject(checkResult)) {
+                checkResult = makeInfoMessageObject(<span class="hljs-string">"check_failed"</span>);
+            }
+            checksFailed.push(checkResult);
+        });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>did we encounter any failing checks?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (!isEmpty(checksFailed)) {
+            <span class="hljs-keyword">return</span> makeError(defaultValue, <span class="hljs-string">'checks_failed'</span>);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>objects are special as they require to recursively descend into them</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (expectedType === <span class="hljs-string">'object'</span>) {
+            
+            <span class="hljs-keyword">var</span> validObject = {};
+            <span class="hljs-keyword">var</span> objectErrors = [];
+
+            forEach(schema.keys, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">val, key</span>) </span>{
+                <span class="hljs-keyword">var</span> validationResult = _validate(value[key], val, path + <span class="hljs-string">"/"</span> + key);
+                <span class="hljs-keyword">if</span> (validationResult.error) {
+                    <span class="hljs-keyword">var</span> keyPresence = val.presence || options.presence;
+                    <span class="hljs-keyword">if</span> (keyPresence === OPTIONAL &amp;&amp; options.warnOnInvalidOptionals) {
+                        issueWarning(validationResult.error);
+                    } <span class="hljs-keyword">else</span> {
+                        objectErrors.push(validationResult.error);
+                    }
+                }
+                validObject[key] = validationResult.value;
+            });
+
+            <span class="hljs-keyword">var</span> pattern = is(schema.pattern, <span class="hljs-built_in">RegExp</span>) ? schema.pattern : <span class="hljs-literal">null</span>;
+            forEach(value, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">val, key</span>) </span>{
+                <span class="hljs-keyword">if</span> (!schema.keys[key]) {
+                    <span class="hljs-keyword">var</span> message = makeInfoMessageObject(<span class="hljs-string">'unknown_key'</span>, <span class="hljs-literal">undefined</span>, key);
+                    <span class="hljs-keyword">var</span> preserve = !options.stripUnknown;
+                    <span class="hljs-keyword">if</span> (pattern &amp;&amp; pattern.test(key)) {
+                        preserve = <span class="hljs-literal">true</span>;
+                    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (options.allowUnknown) {
+                        <span class="hljs-keyword">if</span> (options.warnUnknown) {
+                            issueWarning(message);
+                        }
+                    } <span class="hljs-keyword">else</span> {
+                        objectErrors.push(message);
+                    }
+                    <span class="hljs-keyword">if</span> (preserve) {
+                        value[key] = val;
+                    }
+                }
+            });
+            
+            <span class="hljs-keyword">if</span> (!isEmpty(objectErrors)) {
+                <span class="hljs-keyword">return</span> makeError(validObject, objectErrors);
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p>the value we are working with is now the <code>validObject</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            value = validObject;
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <p>arrays are special just like objects - but different</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (expectedType === <span class="hljs-string">'array'</span>) {
+            
+            <span class="hljs-keyword">var</span> validArray = [];
+            <span class="hljs-keyword">var</span> arrayErrors = [];
+            <span class="hljs-keyword">var</span> includes = schema.includes;
+            <span class="hljs-keyword">var</span> excludes = schema.excludes;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p>if <code>includes</code> is set, check that every value satisfies any includes schema.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (!isEmpty(includes)) {
+                forEach(value, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">elem</span>) </span>{
+                    <span class="hljs-keyword">var</span> validationResult;
+                    <span class="hljs-keyword">var</span> passedIncludes = <span class="hljs-literal">false</span>;
+                    <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>; j &lt; includes.length; j += <span class="hljs-number">1</span>) {
+                        validationResult = _validate(elem, includes[j], path + <span class="hljs-string">"/"</span> + i);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>
+              <p>in case of no error -&gt; value satisfies one includes schema.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                        <span class="hljs-keyword">if</span> (!validationResult.error) {
+                            passedIncludes = <span class="hljs-literal">true</span>;
+                            <span class="hljs-keyword">break</span>;
+                        }
+                    }
+                    <span class="hljs-keyword">if</span> (!passedIncludes) {
+                        arrayErrors.push(validationResult.error);
+                    } <span class="hljs-keyword">else</span> {
+                        validArray.push(validationResult.value);
+                    }
+                });
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <p>otherwise if <code>excludes</code> is set, check that every value does not satisfy
+any excludes schema.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!isEmpty(excludes)) {
+                forEach(value, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">elem</span>) </span>{
+                    <span class="hljs-keyword">var</span> validationResult;
+                    <span class="hljs-keyword">var</span> passedExcludes = <span class="hljs-literal">true</span>;
+                    <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>; j &lt; excludes.length; j += <span class="hljs-number">1</span>) {
+                        validationResult = _validate(elem, excludes[j], path + <span class="hljs-string">"/"</span> + i);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>in case of no error -&gt; value violates one excludes schema.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                        <span class="hljs-keyword">if</span> (!validationResult.error) {
+                            passedExcludes = <span class="hljs-literal">false</span>;
+                            <span class="hljs-keyword">break</span>;
+                        }
+                    }
+                    <span class="hljs-keyword">if</span> (!passedExcludes) {
+                        arrayErrors.push(makeInfoMessageObject(<span class="hljs-string">'matched_excluded_type'</span>));
+                    } <span class="hljs-keyword">else</span> {
+                        validArray.push(validationResult.value);
+                    }
+                });
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>
+              <p>if neither <code>includes</code> nor <code>excludes</code> are set, do assume value
+to be the validArray.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">else</span> {
+                validArray = value;
+            }
+
+            <span class="hljs-keyword">if</span> (!isEmpty(arrayErrors)) {
+                <span class="hljs-keyword">return</span> makeError(validArray, arrayErrors);
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+              </div>
+              <p>the value we are working with is now the <code>validArray</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            value = validArray;
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-55">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>
+              <p>iterate over all checksAfter and check whether the value is ok or not</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">customWarning</span>(<span class="hljs-params">checkResult</span>) </span>{
+            <span class="hljs-keyword">if</span> (isArray(checkResult)) {
+                forEach(checkResult, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>{
+                    customWarning(result);
+                });
+            }
+            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (isString(checkResult)) {
+                customWarning(makeInfoMessageObject(checkResult));
+            }
+            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (isObject(checkResult)) {
+                issueWarning(copy(makeInfoMessageObject(), checkResult));
+            }
+        }
+        forEach(schema.checksAfter, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">check</span>) </span>{
+            <span class="hljs-keyword">var</span> checkResult;
+            <span class="hljs-keyword">try</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-56">&#182;</a>
+              </div>
+              <p>invoking a user-defined function, therefor the try..catch</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                checkResult = check(value);
+            } <span class="hljs-keyword">catch</span> (err) {
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Error while executing user-defined function"</span>);
+                <span class="hljs-built_in">console</span>.log(err);
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+            }
+            <span class="hljs-keyword">if</span> (checkResult === <span class="hljs-literal">true</span>) {
+                <span class="hljs-keyword">return</span>;
+            }
+            customWarning(checkResult);
+        });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-57">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-57">&#182;</a>
+              </div>
+              <p>Known at this point:</p>
+<ul>
+<li><code>value</code> passed all checks</li>
+</ul>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-58">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-58">&#182;</a>
+              </div>
+              <p>apply sanitizeAfter</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        forEach(schema.sanitize, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">sanitizer</span>) </span>{
+            value = sanitizer(value);
+        });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-59">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-59">&#182;</a>
+              </div>
+              <p>hooray! If we did not return with an error yet, we are fine!</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> makeValue(value);
+    }
+
+    <span class="hljs-keyword">var</span> theResult = _validate(value, schema, <span class="hljs-string">""</span>);
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">flatten</span>(<span class="hljs-params">error, errors</span>) </span>{
+        <span class="hljs-keyword">if</span> (isArray(error.type)) {
+            forEach(error.type, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
+                flatten(error, errors);
+            });
+        } <span class="hljs-keyword">else</span> {
+            errors.push(error);
+        }
+        <span class="hljs-keyword">return</span> errors;
+    }
+
+    <span class="hljs-keyword">var</span> errors = theResult.error ? flatten(theResult.error, []) : <span class="hljs-literal">null</span>;
+    <span class="hljs-keyword">var</span> legalValue = theResult.value;
+    warnings = isEmpty(warnings) ? <span class="hljs-literal">null</span> : warnings;
+
+    <span class="hljs-keyword">if</span> (!isFunction(callback)) {
+        <span class="hljs-keyword">return</span> { error: errors, value: legalValue, warnings: warnings };
+    }
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        callback(errors, legalValue, warnings);
+    }, <span class="hljs-number">0</span>);
+}
+
+
+publiclyExposedInterface = <span class="hljs-built_in">Object</span>.freeze({
+
+    any:        bind(rootSchemaBuilder, any),
+    bool:       bind(rootSchemaBuilder, bool),
+    boolean:    bind(rootSchemaBuilder, bool),
+    number:     bind(rootSchemaBuilder, number),
+    string:     bind(rootSchemaBuilder, string),
+    object:     bind(rootSchemaBuilder, object),
+    array:      bind(rootSchemaBuilder, array),
+    func:       bind(rootSchemaBuilder, func),
+
+    alternatives:  bind(rootSchemaBuilder, alternatives),
+
+    compile: compile,
+    validate: validate,
+
+    typeOf: typeOf
+});
+
+optionSchema = compile({
+    allowUnknown:
+        publiclyExposedInterface.bool().default(<span class="hljs-literal">false</span>),
+    stripUnknown:
+        publiclyExposedInterface.bool().default(<span class="hljs-literal">true</span>),
+    warnUnknown:
+        publiclyExposedInterface.bool().default(<span class="hljs-literal">true</span>),
+    strict:
+        publiclyExposedInterface.bool().default(<span class="hljs-literal">true</span>),
+    warnOnInvalidOptionals:
+        publiclyExposedInterface.bool().default(<span class="hljs-literal">true</span>),
+    presence:
+        publiclyExposedInterface.any()
+            .valid(OPTIONAL).valid(REQUIRED).valid(FORBIDDEN)
+            .default(OPTIONAL)
+});
+
+defaultOptions = {
+    allowUnknown: <span class="hljs-literal">false</span>,
+    stripUnknown: <span class="hljs-literal">true</span>,
+    warnUnknown: <span class="hljs-literal">true</span>,
+    strict: <span class="hljs-literal">true</span>,
+    warnOnInvalidOptionals: <span class="hljs-literal">true</span>,
+    presence: OPTIONAL
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-60">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-60">&#182;</a>
+              </div>
+              <p>@exclude</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">module</span>.exports = {
+
+    isFunction: isFunction,
+    isObject: isObject,
+    isNumber: isNumber,
+    isString: isString,
+    isDefined: isDefined,
+    isUndefined: isUndefined,
+    isEmpty: isEmpty,
+    isArray: isArray,
+    isNumeric: isNumeric,
+    isInteger: isInteger,
+
+    getLength: getLength,
+
+    cast: cast,
+    copy: copy,
+    equals: equals,
+    merge: merge,
+
+    publiclyExposedInterface: publiclyExposedInterface
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-61">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-61">&#182;</a>
+              </div>
+              <p>@endexclude</p>
+
+            </div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
