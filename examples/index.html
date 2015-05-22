@@ -30,14 +30,144 @@
 </div>
 
 <div class="row content">
-<div class="col-lg-6">
-  <h4>Subheading</h4>
-  <pre>
-
-  </pre>
-
+<div class="col-lg-12">
+  <p>
+    <kbd style="display: block">
+      Legalize.validate(Math.PI, Legalize.number().integer());
+    </kbd>
+  </p>
+  <pre>{
+  "error": [
+    {
+      "type": "checks_failed",
+      "sourcePath": "",
+      "sourceValue": 3.141592653589793
+    }
+  ],
+  "warnings": null
+}</pre>
 </div>
 </div>
+
+<hr>
+
+
+<div class="row content">
+<div class="col-lg-12">
+<h2>A more complex schema</h2>
+<pre>
+var schema = {
+    firstName:
+        Legalize.string().minLength(1).maxLength(30).required(),
+    lastName:
+        Legalize.string().minLength(1).maxLength(30).required(),
+    age:
+        Legalize.number().integer().min(18),
+    sex:
+        Legalize.string().sanitizeBefore(function (value) {
+                value.toLowerCase();
+        }).valid("male", "female").optional(),
+};
+</pre>
+</div>
+</div>
+
+<hr>
+
+<div class="row content">
+<div class="col-lg-12">
+  <p>
+    This is an ordinary validation against the above schema which succeeds:
+  </p>
+  <p>
+    <kbd style="display: block; white-space: pre">Legalize.validate({
+    firstName: "Alexander",
+    lastName: "Carnicero",
+    age: 27
+}, schema);</kbd>
+  </p>
+  <pre>{
+  "error": null,
+  "value": {
+    "firstName": "Alexander",
+    "lastName": "Carnicero",
+    "age": 27
+  },
+  "warnings": null
+}</pre>
+</div>
+</div>
+
+
+<hr>
+
+<div class="row content">
+<div class="col-lg-12">
+  <p>
+    This validation will issue a warning, since <code>age</code> does
+    not fulfill the constraint, but it is also not required (if it was,
+    the validation would fail with an error). If you want invalid options
+    to issue warnings true, you can specify the option
+    <code>warnOnInvalidOptionals: false</code> (see below).
+  </p>
+  <p>
+    <kbd style="display: block; white-space: pre">Legalize.validate({
+    firstName: "Alexander",
+    lastName: "Carnicero",
+    age: 10
+}, schema);</kbd>
+  </p>
+  <pre>{
+  "error": null,
+  "value": {
+    "firstName": "Alexander",
+    "lastName": "Carnicero"
+  },
+  "warnings": [
+    {
+      "type": "checks_failed",
+      "sourcePath": "/age",
+      "sourceValue": 10
+    }
+  ]
+}</pre>
+</div>
+</div>
+
+
+<hr>
+
+<div class="row content">
+<div class="col-lg-12">
+  <p>
+    Here <code>warnOnInvalidOptionals: false</code> is specified (otherwise
+    it defaults to true), so the given optional but invalid value will
+    make the validation fail.
+  </p>
+  <p>
+    <kbd style="display: block; white-space: pre">Legalize.validate({
+    firstName: "Alexander",
+    lastName: "Carnicero",
+    age: 10
+}, schema);</kbd>
+  </p>
+  <pre>{
+  "error": [
+    {
+      "type": "checks_failed",
+      "sourcePath": "/age",
+      "sourceValue": 10
+    }
+  ],
+  "value": {
+    "firstName": "Alexander",
+    "lastName": "Carnicero"
+  },
+  "warnings": null
+}</pre>
+</div>
+</div>
+
 
 <footer class="footer">
   <p>&copy; PayPal 2015</p>

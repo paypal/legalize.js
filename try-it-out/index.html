@@ -148,7 +148,9 @@ $(function () {
             var schema = new Function("return " + schemaCode + ";");
             var obj = new Function("return " + objCode + ";");
 
-            var result = Legalize.validate(obj(), schema());
+            var result = Legalize.validate(obj(), schema(), {
+                warnOnInvalidOptionals: false    
+            });
 
             if (result.error) {
                 $resultPanel.addClass("panel-danger");
