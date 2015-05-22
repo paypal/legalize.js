@@ -33,6 +33,13 @@ body {
   }
 }
 
+@media (max-width: 700px) {
+  body > a > img {
+    display: none;
+  }
+}
+
+
 .container-narrow > hr {
   margin: 30px 0;
 }
