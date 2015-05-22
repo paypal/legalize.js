@@ -8,9 +8,9 @@ and checks the format of your files.
 Worth mentioning:
 - `legalize.js` in the root directory is a generated source but committed to the
   repository (this is to distribute the browser version via bower).
-- `src/legalize.js` contains the main library. It is assembled via
-  `node-preprocess`.
+- `src/legalize.js` contains the main library.
 - `src/legalize-browser.js` only contains browser specific tweaks such as shims
   needed to make it compatible with various browsers out there.
-
+- The release artifact is assembled via `preprocess`, so check out the
+  documentation: https://github.com/jsoverson/preprocess
 
