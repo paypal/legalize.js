@@ -1,5 +1,7 @@
 # Legalize.js
 
+Lead Maintainer: [Jenny Warnke](https://github.com/jewar)
+
 [![Build Status](https://travis-ci.org/paypal/legalize.js.svg?branch=master)](https://travis-ci.org/paypal/legalize.js)
 
 Legalize.js is a library that performs validation of domain objects.
