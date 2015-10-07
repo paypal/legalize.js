@@ -20,12 +20,12 @@
 (function (factory) {
     "use strict";
 
-    if (typeof define === 'function' && define.amd) {
-        define('Legalize', factory);
-    } else {
-        window.Legalize = factory();
-    }
+    var hookup      = typeof window !== "undefined" ? window : this;
+    hookup.Legalize = factory();
 
+    if (typeof define === "function" && define.amd) {
+        define("Legalize", [], hookup.Legalize);
+    }
 }(function (undefined) {
     "use strict";
 
@@ -39,9 +39,9 @@
             return Object.prototype.toString.call(arg) === '[object Array]';
         };
     }
-    
+
     var ES5Object = {
-        
+
         freeze: isFunc(Object.freeze) ? Object.freeze : function (x) {
             // Object.freeze is used to freeze the publicly exposed API.
             // This will work on all modern browsers, so "attacking"
@@ -101,6 +101,7 @@
     };
 
     return (function (Object) {
+
         // the `Object` argument overloads the actual `Object` in legacy
         // browser engines. legalize uses exactly the functions defined
         // above. Node will not care as this file is only wrapped around

@@ -358,7 +358,7 @@ var string = makeSchemaBuilder({
 
     uppercase: makeCheck(function (actual) {
         actual = String(actual);
-        return actual.toUpperCase() === actual;        
+        return actual.toUpperCase() === actual;
     }),
 
     alphanum: makeMatchCheck(/^[0-9a-zA-Z]*$/),
@@ -402,7 +402,7 @@ var array = makeSchemaBuilder({
 var object = makeSchemaBuilder({
     type: 'object'
 }, withLengthChecks({
-    
+
     keys: makeProperty("keys"),
 
     type: makeCheck(is),
@@ -432,7 +432,7 @@ function validate(value, schema, options, callback) {
     if (isEmpty(options)) {
         options = defaultOptions;
     }
-    
+
     // if the given options are not empty, validate 'em
     // the check is necessary as we would be calling ourselves
     // endlessley while validating the options in a neverending
@@ -453,11 +453,11 @@ function validate(value, schema, options, callback) {
     var warnings = [];
 
     // A helper that is recursively applied along the object.
-    // 
+    //
     // Returns the validated value (or the default, if there is one,
     // in case the validation failed).
     function _validate(value, schema, path) {
-        
+
         // calculate the type of the value - see `typeOf`.
         var actualType = typeOf(value);
 
@@ -487,7 +487,7 @@ function validate(value, schema, options, callback) {
             warnings.push(isObject(warning) ? warning :
                     makeInfoMessageObject(warning, expected, actual));
         }
-        
+
         // creates an errorneous return value
         function makeError(validValue, error, expected, actual) {
             var info = makeInfoMessageObject(error, expected, actual);
@@ -528,7 +528,7 @@ function validate(value, schema, options, callback) {
 
         // Known at this point:
         // - `value` is not undefined
-        
+
         // if FORBIDDEN we're facing a situation here:
         if (presence === FORBIDDEN) {
             return makeError(undefined, 'forbidden_encountered');
@@ -610,7 +610,7 @@ function validate(value, schema, options, callback) {
         // - `value` is not in the set of `allowed` values
         // - `value` is not in the set of `valid` values
         // - `value` is not in the set of `invalid` values
-        
+
         // iterate over all checks and check whether the value satisfies them or not
         var checksFailed = [];
         forEach(schema.checks, function (check) {
@@ -639,7 +639,7 @@ function validate(value, schema, options, callback) {
 
         // objects are special as they require to recursively descend into them
         if (expectedType === 'object') {
-            
+
             var validObject = {};
             var objectErrors = [];
 
@@ -675,7 +675,7 @@ function validate(value, schema, options, callback) {
                     }
                 }
             });
-            
+
             if (!isEmpty(objectErrors)) {
                 return makeError(validObject, objectErrors);
             }
@@ -686,7 +686,7 @@ function validate(value, schema, options, callback) {
 
         // arrays are special just like objects - but different
         else if (expectedType === 'array') {
-            
+
             var validArray = [];
             var arrayErrors = [];
             var includes = schema.includes;

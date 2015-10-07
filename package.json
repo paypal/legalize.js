@@ -1,6 +1,6 @@
 {
   "name": "legalize",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A library for performing object-validation in the browser as in node",
   "author": "Julian Fleischer <julfleischer@paypal.com>",
   "main": "./src/legalize-node.js",
