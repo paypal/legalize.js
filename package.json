@@ -2,7 +2,7 @@
   "name": "legalize",
   "version": "1.2.0",
   "description": "A library for performing object-validation in the browser as in node",
-  "author": "Julian Fleischer <julfleischer@paypal.com>",
+  "author": "Julian Fleischer, Jenny Warnke",
   "main": "./src/legalize-node.js",
   "bin": "legalize.js",
   "licenses": [
