@@ -1,10 +1,11 @@
 {
   "name": "legalize",
   "main": "legalize.js",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "homepage": "https://github.com/paypal/legalize.js",
   "authors": [
-    "Julian Fleischer <julfleischer@paypal.com>"
+    "Julian Fleischer",
+    "Jenny Warnke"
   ],
   "description": "A javascript object validation library.",
   "moduleType": [
