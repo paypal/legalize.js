@@ -101,7 +101,7 @@ function checkSchemaBuilder(which) {
         it (which + "()." + key + " should be a function", function () {
             expect(L[which]()[key]).to.be.a('function');
         });
-        
+
         it (which + "()." + key + " chained should still be a function", function () {
             expect(L[which]()[key]()[key]).to.be.a('function');
         });

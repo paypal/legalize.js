@@ -20,12 +20,19 @@
 (function (factory) {
     "use strict";
 
-    if (typeof define === 'function' && define.amd) {
-        define('Legalize', factory);
+    var legalize = factory();
+
+    // set globally for use with plain javascript
+    if (typeof window !== "undefined") {
+        window.Legalize = legalize;
     } else {
-        window.Legalize = factory();
+        this.Legalize = legalize;
     }
 
+    // define module for use with requireJs
+    if (typeof define === "function" && define.amd) {
+        define("Legalize", [], legalize);
+    }
 }(function (undefined) {
     "use strict";
 
@@ -39,9 +46,9 @@
             return Object.prototype.toString.call(arg) === '[object Array]';
         };
     }
-    
+
     var ES5Object = {
-        
+
         freeze: isFunc(Object.freeze) ? Object.freeze : function (x) {
             // Object.freeze is used to freeze the publicly exposed API.
             // This will work on all modern browsers, so "attacking"
@@ -51,25 +58,25 @@
             return x;
         },
 
-        keys: isFunc(Object.keys) ? Object.keys : (function() {
+        keys: isFunc(Object.keys) ? Object.keys : (function () {
             // Object.keys() is not available in some legacy browsers.
             // This shim is taken (and slightly modified to make jshint happy) from
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
 
             var hasOwnProperty = Object.prototype.hasOwnProperty;
-            var hasDontEnumBug = !({ toString: null }).propertyIsEnumerable('toString');
+            var hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString');
             var dontEnums = [
-                  'toString',
-                  'toLocaleString',
-                  'valueOf',
-                  'hasOwnProperty',
-                  'isPrototypeOf',
-                  'propertyIsEnumerable',
-                  'constructor'
-                ];
+                'toString',
+                'toLocaleString',
+                'valueOf',
+                'hasOwnProperty',
+                'isPrototypeOf',
+                'propertyIsEnumerable',
+                'constructor'
+            ];
             var dontEnumsLength = dontEnums.length;
 
-            return function(obj) {
+            return function (obj) {
                 var result = [], prop, i;
 
                 for (prop in obj) {
@@ -100,18 +107,23 @@
         }
     };
 
-    return (function (Object) {
+    var Legalize = (function (Object) {
+
         // the `Object` argument overloads the actual `Object` in legacy
         // browser engines. legalize uses exactly the functions defined
         // above. Node will not care as this file is only wrapped around
         // the library for the browser.
 
         /* jshint unused: false */
+        var _Legalize = window.Legalize;
 
         // @include legalize.js
-        /* global publiclyExposedInterface */
 
+        /* global publiclyExposedInterface */
         return publiclyExposedInterface;
+
     }(ES5Object));
+
+    return Legalize;
 }));
 
