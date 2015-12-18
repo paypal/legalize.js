@@ -1,5 +1,5 @@
 /*───────────────────────────────────────────────────────────────────────────*\
- │  Copyright (C) 2014 eBay Software Foundation                               │
+ │  Copyright (C) 2014 PayPal                                                 │
  │                                                                            │
  │  Licensed under the Apache License, Version 2.0 (the "License");           │
  │  you may not use this file except in compliance with the License.          │
@@ -19,7 +19,7 @@ var coverageCommand =
 
 var minifiedBanner =
     "/*! <%= pkg.name %> <%= grunt.template.today('dd-mm-yyyy') %>\n" +
-    "    Copyright (C) 2014 eBay Software Foundation\n" +
+    "    Copyright (C) 2014 PayPal\n" +
     "    Licensed under the Apache License, Version 2.0. */\n";
 
 var buildDir = ".build";
