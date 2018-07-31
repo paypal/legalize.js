@@ -195,9 +195,13 @@ Legalize.alternatives(
 and
 
 ```JavaScript
-string().match(/^[0-9]+$/)
+var schema = {
+    digits: Legalize.string().match(/^[0-9]+$/)
+}
 // is the same as
-/^[0-9]+/
+var schema = {
+    digits: /^[0-9]+/
+}
 ```
 
 i.e. you can do
@@ -219,7 +223,7 @@ instead of
 ```JavaScript
 var schema = Legalize.object().keys({
 	character: Legalize.string().match(/^[a-z]$/)
-}
+})
 ```
 
 Every value which is not a `RegExp`, an `Object`, or an `Array` will simply
@@ -425,10 +429,11 @@ Legalize.validate(/^...$/, object.type(RegExp));
 Legalize.validate(new Whatever, object.type(Whatever));
 ```
 
-#### `object.pattern(regExp)`
+#### `object.pattern(regExp)` or `object.pattern([regExp, schema])`
 
 Regardless of the options `allowUnknown` and `stripUnknown` will accept keys matching the given
-pattern and copy their associated values over to the legalized object.
+pattern and copy their associated values over to the legalized object. If `schema` is present the
+the values will be validated.
 
 
 ### `alternatives(...alternatives)`

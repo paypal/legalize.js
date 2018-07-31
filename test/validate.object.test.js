@@ -77,6 +77,30 @@ describe("object validations", function() {
         expect(!L.validate("ax", schema).error).to.be.false();
     });
 
+    it("object().keys().pattern(RegExp,schema) should validate the object, " +
+        "non-matched keys are validated by pattern", function () {
+        var schema = L.object().keys({
+            a: L.string().match(/^\w+$/),
+            b: L.string().match(/^\d+$/)}).
+        pattern([/[X-Z]+/, [1,2,3]]);
+
+        var result = L.validate({a:'Hello123', b:'890'}, schema);
+        expect(!result.error).to.be.true();
+        expect(result.value).to.eql({a:'Hello123', b:'890'});
+
+        result = L.validate({a:'Hello123', b:'890', X:3}, schema);
+        expect(!result.error).to.be.true();
+        expect(result.value).to.eql({a:'Hello123', b:'890', X:3});
+
+        result = L.validate({a:'Hello123', b:'890', X:4}, schema);
+        expect(result.warnings[0].type).to.be.equal('no_alternative_matched');
+        expect(result.value).to.eql({a:'Hello123', b:'890', X:undefined});
+
+        result = L.validate({a:'Hello123', b:'890', W:3}, schema);
+        expect(result.error[0].type).to.be.equal('unknown_key');
+        expect(result.value).to.eql({a:'Hello123', b:'890'});
+    });
+
     it("validate(..., {...}) should accept the object according to def.", function () {
 
         var result = L.validate({ x: 3, y: "hello" }, { x: L.any().valid(3), y: L.string() });
@@ -127,6 +151,7 @@ describe("object validations", function() {
             done();
         });
     });
+
 
 });
 

@@ -143,7 +143,7 @@
     // Specify indentation.
     "indent": 4,
     // Maximum length of a line
-    "maxlen": 100,
+    "maxlen": 110,
     // Whether strict whitespace rules apply.
     "white": false,
     // Quote formatting
@@ -154,9 +154,9 @@
     // Maximum number of function parameters.
     "maxparams": 5,
     // Maximum block nesting depth.
-    "maxdepth": 4,
+    "maxdepth": 5,
     // Maximum number of statements per function.
-    "maxstatements": 80,
+    "maxstatements": 90,
     // Maximum cyclomatic complexity.
     "maxcomplexity": 30
 }

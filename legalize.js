@@ -607,6 +607,11 @@
                             makeInfoMessageObject(warning, expected, actual));
                 }
         
+                // creates a simple, valid return value
+                function makeValue(validValue) {
+                    return { value: validValue };
+                }
+        
                 // creates an errorneous return value
                 function makeError(validValue, error, expected, actual) {
                     var info = makeInfoMessageObject(error, expected, actual);
@@ -621,11 +626,6 @@
                         error: info,
                         value: validValue
                     };
-                }
-        
-                // creates a simple, valid return value
-                function makeValue(validValue) {
-                    return { value: validValue };
                 }
         
                 // loop variables. due to hoisting will end up here anyway.
@@ -773,9 +773,22 @@
                             }
                         }
                         validObject[key] = validationResult.value;
+                        // remove the validated keys
+                        delete value[key];
                     });
         
-                    var pattern = is(schema.pattern, RegExp) ? schema.pattern : null;
+                    // check the remaining value keys agains pattern and schema if any
+                    // pattern can be either RegExp or [RegExp, schema]
+                    var pattern = null;
+                    var patternSchema = null;
+                    if (schema.pattern) {
+                        if (isArray(schema.pattern) && (schema.pattern.length >= 2)) {
+                            pattern = schema.pattern[0];
+                            patternSchema = compile(schema.pattern[1]);
+                        } else {
+                            pattern = schema.pattern;
+                        }
+                    }
                     forEach(value, function (val, key) {
                         if (!schema.keys[key]) {
                             var message = makeInfoMessageObject('unknown_key', undefined, key);
@@ -790,7 +803,20 @@
                                 objectErrors.push(message);
                             }
                             if (preserve) {
-                                value[key] = val;
+                                if (patternSchema) {
+                                    var validationResult = _validate(val, patternSchema, path + "/" + key);
+                                    if (validationResult.error) {
+                                        var keyPresence = val.presence || options.presence;
+                                        if (keyPresence === OPTIONAL && options.warnOnInvalidOptionals) {
+                                            issueWarning(validationResult.error);
+                                        } else {
+                                            objectErrors.push(validationResult.error);
+                                        }
+                                    }
+                                    validObject[key] = validationResult.value;
+                                } else {
+                                    validObject[key] = val;
+                                }
                             }
                         }
                     });
@@ -984,7 +1010,7 @@
         
         
 
-        /* global publiclyExposedInterface */
+        /* exported publiclyExposedInterface */
         return publiclyExposedInterface;
 
     }(ES5Object));
