@@ -675,38 +675,39 @@ function validate(value, schema, options, callback) {
                 } else {
                     pattern = schema.pattern;
                 }
-            }
-            forEach(value, function (val, key) {
-                if (!schema.keys[key]) {
-                    var message = makeInfoMessageObject('unknown_key', undefined, key);
-                    var preserve = !options.stripUnknown;
-                    if (pattern && pattern.test(key)) {
-                        preserve = true;
-                    } else if (options.allowUnknown) {
-                        if (options.warnUnknown) {
-                            issueWarning(message);
-                        }
-                    } else {
-                        objectErrors.push(message);
-                    }
-                    if (preserve) {
-                        if (patternSchema) {
-                            var validationResult = _validate(val, patternSchema, path + "/" + key);
-                            if (validationResult.error) {
-                                var keyPresence = val.presence || options.presence;
-                                if (keyPresence === OPTIONAL && options.warnOnInvalidOptionals) {
-                                    issueWarning(validationResult.error);
-                                } else {
-                                    objectErrors.push(validationResult.error);
-                                }
+
+                forEach(value, function (val, key) {
+                    if (!schema.keys[key]) {
+                        var message = makeInfoMessageObject('unknown_key', undefined, key);
+                        var preserve = !options.stripUnknown;
+                        if (pattern && pattern.test(key)) {
+                            preserve = true;
+                        } else if (options.allowUnknown) {
+                            if (options.warnUnknown) {
+                                issueWarning(message);
                             }
-                            validObject[key] = validationResult.value;
                         } else {
-                            validObject[key] = val;
+                            objectErrors.push(message);
+                        }
+                        if (preserve) {
+                            if (patternSchema) {
+                                var validationResult = _validate(val, patternSchema, path + "/" + key);
+                                if (validationResult.error) {
+                                    var keyPresence = val.presence || options.presence;
+                                    if (keyPresence === OPTIONAL && options.warnOnInvalidOptionals) {
+                                        issueWarning(validationResult.error);
+                                    } else {
+                                        objectErrors.push(validationResult.error);
+                                    }
+                                }
+                                validObject[key] = validationResult.value;
+                            } else {
+                                validObject[key] = val;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             if (!isEmpty(objectErrors)) {
                 return makeError(validObject, objectErrors);

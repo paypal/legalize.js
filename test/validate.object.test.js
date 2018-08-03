@@ -70,6 +70,18 @@ describe("object validations", function() {
         expect(!L.validate(/^[0-9]+$/, schema).error).to.be.true();
     });
 
+
+    it("object().type() should accept user defined classes (test with ES5 class)", function () {
+        function TypeTestClass(mode) {
+            this.mode = mode;
+        }
+
+        var schema = L.object().type(TypeTestClass);
+        var testObject = new TypeTestClass(true);
+
+        expect(!L.validate(testObject, schema).error).to.be.true();
+    });
+
     it("object().type(RegExp) should reject anything but regular expressions", function () {
         var schema = L.object().type(RegExp);
 

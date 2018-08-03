@@ -143,7 +143,7 @@
     // Specify indentation.
     "indent": 4,
     // Maximum length of a line
-    "maxlen": 110,
+    "maxlen": 120,
     // Whether strict whitespace rules apply.
     "white": false,
     // Quote formatting
