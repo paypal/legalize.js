@@ -73,7 +73,7 @@ function isNumeric(value)   {
 }
 function isInteger(value)   { return parseInt(value) === Number(value); }
 function getLength(thing) {
-    if (isArray(thing) || isString(thing)) { return thing.length; }
+    if (isArray(thing) || isString(thing) || isFunction(thing)) { return thing.length; }
     if (isObject(thing))                   { return Object.keys(thing).length; }
     return undefined;
 }
@@ -322,7 +322,7 @@ var bool = makeSchemaBuilder({
 
 var func = makeSchemaBuilder({
     type: 'function'
-});
+}, withLengthChecks({}));
 
 var number = makeSchemaBuilder({
     type: 'number'

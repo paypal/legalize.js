@@ -81,8 +81,11 @@ describe("utilities", function() {
         expect(core.getLength([1, 'hello', {}])).to.be.be.equal(3);
     });
 
-    it("#getLength should return `undefined' if not object, array, or string", function () {
-        expect(core.getLength(function () {})).to.be.undefined();
+    it("#getLength should return 3 for `function(a,b,c) {return a+b*c;}'", function () {
+        expect(core.getLength(function(a,b,c) {return a+b*c;})).to.be.be.equal(3);
+    });
+
+    it("#getLength should return `undefined' if not object, array, string, or function", function () {
         expect(core.getLength(10e-3)).to.be.undefined();
     });
 

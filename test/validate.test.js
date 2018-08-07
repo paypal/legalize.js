@@ -52,6 +52,21 @@ describe("basic validations", function() {
         expect(!L.validate(function () {}, L.func()).error).to.be.true();
     });
 
+    it ("func() should accept functions with arity length check", function() {
+        expect(!L.validate(function (a, b) {return a+b;}, L.func().length(2)).error).to.be.true();
+        expect(!L.validate(function (a, b) {return a+b;}, L.func().length(1)).error).to.be.false();
+    });
+
+    it ("func() should accept functions with arity minLength check", function() {
+        expect(!L.validate(function (a, b, c) {return a+b*c;}, L.func().minLength(2)).error).to.be.true();
+        expect(!L.validate(function (a, b, c) {return a+b*c;}, L.func().minLength(4)).error).to.be.false();
+    });
+
+    it ("func() should accept functions with arity maxLength check", function() {
+        expect(!L.validate(function (a, b, c) {return a+b*c;}, L.func().maxLength(4)).error).to.be.true();
+        expect(!L.validate(function (a, b, c) {return a+b*c;}, L.func().maxLength(2)).error).to.be.false();
+    });
+
     [0, 1, 23.1e23, null, "true", "undefined", "false", "foobar", {}, { x: "qux" }, []]
       .forEach(function (x) {
         it("func() should reject " + x, function () {

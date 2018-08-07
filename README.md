@@ -331,7 +331,21 @@ Applies a sanitization function to the unvalidated value (happens before all che
 
 ### `func()`
 
-The value should be a function. This builder does not any special chains.
+The value should be a function. The following options can be used to check the number of arguments (arity) that the functions takes. 
+
+#### `func().minLength(integer)`
+
+Check that the arity has the given minimum length.
+
+#### `func().maxLength(integer)`
+
+Check that the arity has the given maximum length.
+
+#### `func().length(integer)`
+
+Check that the arity has exactly the given length.
+
+
 
 ### `bool()` / `boolean()`
 
