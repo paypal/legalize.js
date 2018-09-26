@@ -75,11 +75,42 @@ describe("object validations", function() {
         function TypeTestClass(mode) {
             this.mode = mode;
         }
+        /*function NotTypeTestClass(mode) {
+            this.mode = mode;
+        }*/
 
         var schema = L.object().type(TypeTestClass);
         var testObject = new TypeTestClass(true);
+        //var badObject = new NotTypeTestClass(true);
 
         expect(!L.validate(testObject, schema).error).to.be.true();
+        //expect(L.validate(badObject, schema).error).to.be.true();
+    });
+
+    it("object().type() should reject wrong user defined class (ES5 check)", function () {
+        function TypeTestClass(mode) {
+            this.mode = mode;
+        }
+        function NotTypeTestClass(mode) {
+            this.mode = mode;
+        }
+
+        var schema = L.object().type(TypeTestClass);
+        var wrongObject = new NotTypeTestClass(true);
+
+        expect(!L.validate(wrongObject, schema).error).to.be.false();
+    });
+
+    it("object().type() should return the instance of the user class (test with ES5 class)", function () {
+        function TypeTestClass(mode, name) {
+            this.mode = mode;
+            this.name = name;
+        }
+        var schema = L.object().type(TypeTestClass);
+        var testObject = new TypeTestClass(true, 'Ronan');
+        var result = L.validate(testObject, schema);
+        expect(result.value.mode).to.be.true();
+        expect(result.value.name).to.be.equal('Ronan');
     });
 
     it("object().type(RegExp) should reject anything but regular expressions", function () {
