@@ -73,7 +73,7 @@ function isNumeric(value)   {
 }
 function isInteger(value)   { return parseInt(value) === Number(value); }
 function getLength(thing) {
-    if (isArray(thing) || isString(thing)) { return thing.length; }
+    if (isArray(thing) || isString(thing) || isFunction(thing)) { return thing.length; }
     if (isObject(thing))                   { return Object.keys(thing).length; }
     return undefined;
 }
@@ -192,7 +192,7 @@ function compile(schema) {
     return publiclyExposedInterface.any().valid(schema).compile();
 }
 
-function makeSchemaBuilder(arg, validators) {
+function makeSchemaBuilder(arg, validators, isType) {
     return function () {
         var expected = Array.prototype.slice.call(arguments);
         var obj = Object.create(this);
@@ -210,6 +210,7 @@ function makeSchemaBuilder(arg, validators) {
                 applyEach(schema.alternatives, doCompile);
             }
             schema._isSchema = true;
+            schema._isType = isType ? true : null;
             return schema;
         };
         return obj;
@@ -240,6 +241,16 @@ function makeCheck(predicate) {
             }
         };
     });
+}
+
+function makeTypeCheck() {
+    return makeSchemaBuilder(function (expected) {
+        return {
+            checks: function (actual) {
+                return is(actual, expected[0]);
+            }
+        };
+    }, undefined, true);
 }
 
 function makeMatchCheck(pattern) {
@@ -322,7 +333,7 @@ var bool = makeSchemaBuilder({
 
 var func = makeSchemaBuilder({
     type: 'function'
-});
+}, withLengthChecks({}));
 
 var number = makeSchemaBuilder({
     type: 'number'
@@ -411,7 +422,7 @@ var object = makeSchemaBuilder({
 
     keys: makeProperty("keys"),
 
-    type: makeCheck(is),
+    type: makeTypeCheck(), //makeCheck(is),
 
     pattern: makeProperty("pattern")
 
@@ -494,6 +505,11 @@ function validate(value, schema, options, callback) {
                     makeInfoMessageObject(warning, expected, actual));
         }
 
+        // creates a simple, valid return value
+        function makeValue(validValue) {
+            return { value: validValue };
+        }
+
         // creates an errorneous return value
         function makeError(validValue, error, expected, actual) {
             var info = makeInfoMessageObject(error, expected, actual);
@@ -508,11 +524,6 @@ function validate(value, schema, options, callback) {
                 error: info,
                 value: validValue
             };
-        }
-
-        // creates a simple, valid return value
-        function makeValue(validValue) {
-            return { value: validValue };
         }
 
         // loop variables. due to hoisting will end up here anyway.
@@ -646,48 +657,84 @@ function validate(value, schema, options, callback) {
         // objects are special as they require to recursively descend into them
         if (expectedType === 'object') {
 
+
             var validObject = {};
             var objectErrors = [];
 
-            forEach(schema.keys, function (val, key) {
-                var validationResult = _validate(value[key], val, path + "/" + key);
-                if (validationResult.error) {
-                    var keyPresence = val.presence || options.presence;
-                    if (keyPresence === OPTIONAL && options.warnOnInvalidOptionals) {
-                        issueWarning(validationResult.error);
-                    } else {
-                        objectErrors.push(validationResult.error);
-                    }
-                }
-                validObject[key] = validationResult.value;
-            });
-
-            var pattern = is(schema.pattern, RegExp) ? schema.pattern : null;
-            forEach(value, function (val, key) {
-                if (!schema.keys[key]) {
-                    var message = makeInfoMessageObject('unknown_key', undefined, key);
-                    var preserve = !options.stripUnknown;
-                    if (pattern && pattern.test(key)) {
-                        preserve = true;
-                    } else if (options.allowUnknown) {
-                        if (options.warnUnknown) {
-                            issueWarning(message);
-                        }
-                    } else {
-                        objectErrors.push(message);
-                    }
-                    if (preserve) {
-                        value[key] = val;
-                    }
-                }
-            });
-
-            if (!isEmpty(objectErrors)) {
-                return makeError(validObject, objectErrors);
+            // schema was a .type test. Simply copy the
+            // object to the output. The other tests (keys, pattern)
+            // are redundant in this case
+            if (schema._isType) {
+                validObject = value;
             }
+            else {
+                forEach(schema.keys, function (val, key) {
+                    var validationResult = _validate(value[key], val, path + "/" + key);
+                    if (validationResult.error) {
+                        var keyPresence = val.presence || options.presence;
+                        if (keyPresence === OPTIONAL && options.warnOnInvalidOptionals) {
+                            issueWarning(validationResult.error);
+                        } else {
+                            objectErrors.push(validationResult.error);
+                        }
+                    }
+                    validObject[key] = validationResult.value;
+                    // remove the validated keys
+                    delete value[key];
+                });
 
-            // the value we are working with is now the `validObject`
-            value = validObject;
+                // check the remaining value keys agains pattern and schema if any
+                // pattern can be either RegExp or [RegExp, schema]
+                var pattern = null;
+                var patternSchema = null;
+                if (schema.pattern) {
+                    if (isArray(schema.pattern) && (schema.pattern.length >= 2)) {
+                        pattern = schema.pattern[0];
+                        patternSchema = compile(schema.pattern[1]);
+                    } else {
+                        pattern = schema.pattern;
+                    }
+
+                    forEach(value, function (val, key) {
+                        if (!schema.keys[key]) {
+                            var message = makeInfoMessageObject('unknown_key', undefined, key);
+                            var preserve = !options.stripUnknown;
+                            if (pattern && pattern.test(key)) {
+                                preserve = true;
+                            } else if (options.allowUnknown) {
+                                if (options.warnUnknown) {
+                                    issueWarning(message);
+                                }
+                            } else {
+                                objectErrors.push(message);
+                            }
+                            if (preserve) {
+                                if (patternSchema) {
+                                    var validationResult = _validate(val, patternSchema, path + "/" + key);
+                                    if (validationResult.error) {
+                                        var keyPresence = val.presence || options.presence;
+                                        if (keyPresence === OPTIONAL && options.warnOnInvalidOptionals) {
+                                            issueWarning(validationResult.error);
+                                        } else {
+                                            objectErrors.push(validationResult.error);
+                                        }
+                                    }
+                                    validObject[key] = validationResult.value;
+                                } else {
+                                    validObject[key] = val;
+                                }
+                            }
+                        }
+                    });
+                }
+
+                if (!isEmpty(objectErrors)) {
+                    return makeError(validObject, objectErrors);
+                }
+
+                // the value we are working with is now the `validObject`
+                value = validObject;
+            }
         }
 
         // arrays are special just like objects - but different
