@@ -144,6 +144,28 @@ describe("object validations", function() {
         expect(result.value).to.eql({a:'Hello123', b:'890'});
     });
 
+    it("object().keys().pattern(RegExp,schema) should validate the object, " +
+        "also when it is a list, of schemas", function () {
+        // two schema: one with key n and the other with key a
+        // Note that the required is essential otherwise the
+        // alternatives evaluation will accept an undefined
+        // result.
+        var alternate = L.alternatives({n: L.string(/^[0-9]+$/).required()},
+                                        {a: L.string().lowercase().required()});
+        // keys must be uppercase letters
+        var schema = L.object().pattern([/[X-Z]+/, alternate]);
+
+        var result = L.validate({X: {n: '0123456789'}}, schema);
+        expect(result.value).to.eql({X: {n: '0123456789'}});
+
+        result = L.validate({Y: {a: 'abcdefghijklm'}}, schema);
+        expect(result.value).to.eql({Y: {a: 'abcdefghijklm'}});
+
+        result = L.validate({Y: {a: 'Abcdefghijklm'}}, schema);
+        expect(result.warnings.length).to.eql(1);
+
+    });
+
     it("validate(..., {...}) should accept the object according to def.", function () {
 
         var result = L.validate({ x: 3, y: "hello" }, { x: L.any().valid(3), y: L.string() });
