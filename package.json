@@ -13,8 +13,8 @@
   ],
   "readmeFilename": "README.md",
   "repository": {
-      "type": "git",
-      "url": "git@github.com:paypal/legalize.js.git"
+    "type": "git",
+    "url": "git@github.com:paypal/legalize.js.git"
   },
   "scripts": {
     "dist": "grunt",
@@ -41,5 +41,7 @@
     "mocha": "^2.0.1",
     "sinon": "^1.12.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "grunt-cli": "^1.2.0"
+  }
 }

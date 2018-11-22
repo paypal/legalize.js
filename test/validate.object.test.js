@@ -70,11 +70,100 @@ describe("object validations", function() {
         expect(!L.validate(/^[0-9]+$/, schema).error).to.be.true();
     });
 
+
+    it("object().type() should accept user defined classes (test with ES5 class)", function () {
+        function TypeTestClass(mode) {
+            this.mode = mode;
+        }
+        /*function NotTypeTestClass(mode) {
+            this.mode = mode;
+        }*/
+
+        var schema = L.object().type(TypeTestClass);
+        var testObject = new TypeTestClass(true);
+        //var badObject = new NotTypeTestClass(true);
+
+        expect(!L.validate(testObject, schema).error).to.be.true();
+        //expect(L.validate(badObject, schema).error).to.be.true();
+    });
+
+    it("object().type() should reject wrong user defined class (ES5 check)", function () {
+        function TypeTestClass(mode) {
+            this.mode = mode;
+        }
+        function NotTypeTestClass(mode) {
+            this.mode = mode;
+        }
+
+        var schema = L.object().type(TypeTestClass);
+        var wrongObject = new NotTypeTestClass(true);
+
+        expect(!L.validate(wrongObject, schema).error).to.be.false();
+    });
+
+    it("object().type() should return the instance of the user class (test with ES5 class)", function () {
+        function TypeTestClass(mode, name) {
+            this.mode = mode;
+            this.name = name;
+        }
+        var schema = L.object().type(TypeTestClass);
+        var testObject = new TypeTestClass(true, 'Ronan');
+        var result = L.validate(testObject, schema);
+        expect(result.value.mode).to.be.true();
+        expect(result.value.name).to.be.equal('Ronan');
+    });
+
     it("object().type(RegExp) should reject anything but regular expressions", function () {
         var schema = L.object().type(RegExp);
 
         expect(!L.validate(2353, schema).error).to.be.false();
         expect(!L.validate("ax", schema).error).to.be.false();
+    });
+
+    it("object().keys().pattern(RegExp,schema) should validate the object, " +
+        "non-matched keys are validated by pattern", function () {
+        var schema = L.object().keys({
+            a: L.string().match(/^\w+$/),
+            b: L.string().match(/^\d+$/)}).
+        pattern([/[X-Z]+/, [1,2,3]]);
+
+        var result = L.validate({a:'Hello123', b:'890'}, schema);
+        expect(!result.error).to.be.true();
+        expect(result.value).to.eql({a:'Hello123', b:'890'});
+
+        result = L.validate({a:'Hello123', b:'890', X:3}, schema);
+        expect(!result.error).to.be.true();
+        expect(result.value).to.eql({a:'Hello123', b:'890', X:3});
+
+        result = L.validate({a:'Hello123', b:'890', X:4}, schema);
+        expect(result.warnings[0].type).to.be.equal('no_alternative_matched');
+        expect(result.value).to.eql({a:'Hello123', b:'890', X:undefined});
+
+        result = L.validate({a:'Hello123', b:'890', W:3}, schema);
+        expect(result.error[0].type).to.be.equal('unknown_key');
+        expect(result.value).to.eql({a:'Hello123', b:'890'});
+    });
+
+    it("object().keys().pattern(RegExp,schema) should validate the object, " +
+        "also when it is a list, of schemas", function () {
+        // two schema: one with key n and the other with key a
+        // Note that the required is essential otherwise the
+        // alternatives evaluation will accept an undefined
+        // result.
+        var alternate = L.alternatives({n: L.string(/^[0-9]+$/).required()},
+                                        {a: L.string().lowercase().required()});
+        // keys must be uppercase letters
+        var schema = L.object().pattern([/[X-Z]+/, alternate]);
+
+        var result = L.validate({X: {n: '0123456789'}}, schema);
+        expect(result.value).to.eql({X: {n: '0123456789'}});
+
+        result = L.validate({Y: {a: 'abcdefghijklm'}}, schema);
+        expect(result.value).to.eql({Y: {a: 'abcdefghijklm'}});
+
+        result = L.validate({Y: {a: 'Abcdefghijklm'}}, schema);
+        expect(result.warnings.length).to.eql(1);
+
     });
 
     it("validate(..., {...}) should accept the object according to def.", function () {
@@ -127,6 +216,7 @@ describe("object validations", function() {
             done();
         });
     });
+
 
 });
 
